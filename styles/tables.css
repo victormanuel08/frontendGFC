@@ -1,0 +1,39 @@
+/* tables.css */
+.table-auto {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+  
+  .table-auto th, .table-auto td {
+    padding: 1rem;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  
+  .table-auto th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+  
+  .table-auto tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .table-auto tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .table-auto td {
+    vertical-align: middle;
+  }
+  
+  .table-actions {
+    text-align: center;
+    cursor: pointer;
+  }
+  
+  .table-actions .delete-icon {
+    color: red;
+  }
+  
