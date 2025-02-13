@@ -22,72 +22,61 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
-import { ref} from 'vue';
-import Swal from 'sweetalert2';
+import { ref, defineEmits } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthTokensStorage, useAuthUserStorage } from '~/stores/auth';
+import Swal from 'sweetalert2';
 
-const emit = defineEmits(['close']);
 const router = useRouter();
-
+const authTokensStorage = useAuthTokensStorage();
+const authUserStorage = useAuthUserStorage();
 const loading = ref(false);
+
 const loginData = ref({
   username: '',
   password: '',
 });
 
-const closeModal = () => {
-  emit('close');
-};
+const emit = defineEmits(['login-success', 'close']); // 🟢 Definir eventos
 
 const doLogin = async () => {
   if (loading.value) return;
   loading.value = true;
 
-  try {    
-    const response = await loginRequest();   
-    await handleSuccess(response);
-  } catch (error1) {
-    try {      
-      const response = await loginRequest();      
-      await handleSuccess(response);
-    } catch (error2) {      
-      Swal.fire('Error', 'Correo o contraseña incorrectos', 'error');
-    }
+  try {
+    const response = await $fetch('/api/auth/token/', {
+      method: 'POST',
+      body: loginData.value, 
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.access) throw new Error('Token no recibido');
+    if (!response.access.startsWith('Bearer ')) response.access = `Bearer ${response.access}`;
+    console.log('Token de acceso:', response.access);
+
+    authTokensStorage.accessToken.value = response.access;
+
+    authUserStorage.value = await $fetch('/api/me', {
+      headers: { Authorization: `Bearer ${response.access}` },
+    });
+
+    Swal.fire('Éxito', 'Inicio de sesión exitoso', 'success');
+
+    emit('login-success'); // 🟢 Notificar al componente padre que el login fue exitoso
+  } catch (error) {
+    console.error('Error de autenticación:', error);
+    Swal.fire('Error', 'Correo o contraseña incorrectos', 'error');
   } finally {
     loading.value = false;
   }
 };
 
-const loginRequest = () => {
-  return $fetch('/api/auth/token/', {
-    method: 'POST',
-    body: loginData.value,
-  });
-};
-
-const handleSuccess = async (response: any) => {
-  const authTokensStorage = useAuthTokensStorage();
-  authTokensStorage.accessToken.value = response.access;
-
-  const authUserStorage = useAuthUserStorage();
-  authUserStorage.value = await $fetch('/api/auth/users/me/', {
-    headers: { Authorization: `Bearer ${response.access}` },
-  });
-
-  Swal.fire('Éxito', 'Inicio de sesión exitoso', 'success');
-  closeModal();
-  location.reload();
-  router.push('/indexadmin')
-};
-
-const goToForgotPassword = () => {
-  closeModal();
-  router.push('/forgot-password');
+const closeModal = () => {
+  emit('close'); // 🟢 Emitir evento para cerrar modal
 };
 </script>
+
 
 <style scoped>
 /* Overlay del modal */

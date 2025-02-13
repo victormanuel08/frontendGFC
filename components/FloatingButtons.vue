@@ -1,15 +1,12 @@
 <template>
   <div class="floating-buttons">
     <button class="floating-button login" @click="toggleAuthModal">
-      <img
-        :src="loginImage"
-        alt="Auth"
-      />
+      <img :src="loginImage" alt="Auth" />
     </button>
-    <button class="floating-button payment" @click="showPaymentForm = true">
+    <button class="floating-button payment" @click="showPaymentForm = true" v-if="isLogged">
       <img src="/static/icons/payment.jpg" alt="Payment" />
     </button>
-    <LoginModal v-if="showLoginModal" @close="showLoginModal = false" />
+    <LoginModal v-if="showLoginModal" @close="showLoginModal = false" @login-success="handleLoginSuccess" />
     <LogoutModal v-if="showLogoutModal" @close="showLogoutModal = false" />
     <PaymentForm v-if="showPaymentForm" @close="showPaymentForm = false" />
   </div>
@@ -18,11 +15,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import LoginModal from './LoginModal.vue'; 
-import LogoutModal from './LogoutModal.vue'; 
-import PaymentForm from './PaymentForm.vue'; 
+import LoginModal from './LoginModal.vue';
+import LogoutModal from './LogoutModal.vue';
+import PaymentForm from './PaymentForm.vue';
 
-const isLogged = ref(false); 
+const isLogged = ref(false);
 const showLoginModal = ref(false);
 const showLogoutModal = ref(false);
 const showPaymentForm = ref(false);
@@ -39,17 +36,23 @@ const toggleAuthModal = () => {
 };
 
 onMounted(async () => {
-  try {     
-    const response = await fetch('api/public/menu');
-    const data = await response.json();
-    isLogged.value = data.isLogged;
+  try {
+    const response = await $fetch('api/public/menu');
+
+    isLogged.value = response.isLogged;
     loginImage.value = isLogged.value
-      ? "/static/icons/menuprincipal.jpg" 
-      : "/static/icons/login.jpg"; 
+      ? "/_nuxt/static/icons/menuprincipal.jpg"
+      : "/_nuxt/static/icons/login.jpg";
   } catch (error) {
     console.error('Error checking login status:', error);
   }
 });
+
+const handleLoginSuccess = () => {
+  showLoginModal.value = false; // Cierra la modal
+  router.push('/'); // Redirige a la página principal
+};
+
 </script>
 
 <style scoped>

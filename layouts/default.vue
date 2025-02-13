@@ -4,6 +4,7 @@
     <main>
       <slot />
       <FloatingButtons />
+      <Indexadmin></Indexadmin>
     </main>
     <Footer />
     <Loading v-if="isLoading" />
@@ -22,7 +23,7 @@ const isLoading = ref(true);
 // Simula una carga de datos
 setTimeout(() => {
   isLoading.value = false;
-}, 3000);
+}, 500);
 </script>
 
 <style>

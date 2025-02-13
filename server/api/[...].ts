@@ -1,72 +1,98 @@
 import type { H3Event, HTTPMethod } from "h3";
 import { FetchError } from "ofetch";
+import { jwtDecode } from "jwt-decode"; // Asegúrate de tener instalada esta biblioteca
 
-const API_URL = "http://localhost:8000";
+export const API_URL = "http://localhost:8000";
 
 export default defineEventHandler(async (event) => {
-    const route = event.context.params?._; // Ruta que se está solicitando
-    const query = getQuery(event); // Parámetros de la query
-    const method: HTTPMethod = event.method; // Método HTTP
-    const requestHeaders = getHeaders(event); // Headers de la solicitud
-    const token = getCookie(event, "token"); // Token de sesión
+    // 🔍 Obtener información clave
+    const route = event.context.params?._ || ""; // Evitar undefined
+    const query = getQuery(event);
+    const method: HTTPMethod = event.method;
+    const requestHeaders = getHeaders(event);
+    
     const refreshToken = getCookie(event, "refresh_token");
+    const accessToken = getCookie(event, "token");
 
-    // Configurar encabezados base
-    const headers: Record<string, string> = {
-        "Content-Type": requestHeaders["content-type"] || "application/json",
+    // 🔥 Log para depurar
+    console.log("➡️ URL solicitada:", event.node.req.url);
+    console.log("➡️ Ruta evaluada:", route);
+    
+    // 🔓 Permitir cualquier ruta en `api/public/`
+    if (route.startsWith("public/menu") || route.startsWith("media/")) {
+        console.log("✅ Acceso sin autenticación:", route);
+
+        // Verificar si el token está disponible y es válido
+        let headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        };
+        if (accessToken) {
+            try {
+                const decodedToken = jwtDecode(accessToken);
+                const currentTime = Date.now() / 1000; // Tiempo actual en segundos
+                if (decodedToken.exp > currentTime) {
+                    headers["Authorization"] = `${accessToken}`;
+                } else {
+                    console.log("⛔ Token expirado.");
+                }
+            } catch (error) {
+                console.error("Error decodificando el token:", error);
+            }
+        }
+        
+        return await $fetch(`${API_URL}/${route}/`, { headers });
+    }
+
+    // 🔒 Verificar autenticación para rutas privadas
+    // Configurar headers
+    const headers = {
+        "Content-Type": "application/json",
         "Accept": "application/json",
     };
 
-    // Verificar si la ruta no es "menu" para agregar el token
-    if (route !== 'menu' && token) {
-        headers["Authorization"] = `Bearer ${token}`;
+    if (accessToken) {
+        headers["Authorization"] = `${accessToken}`;
     }
+
+    console.log("🔑 Token de acceso:", accessToken);
 
     const reqOpts: Record<string, unknown> = {
         method,
-        headers,    
+        headers,
         query,
     };
 
-    // Si la ruta es "menu", evitar agregar el token
-    if (route === 'menu') {
-        const url = `${API_URL}/public/menu/`;
-        console.log(`Fetching public menu from: ${url}`);
-        // Realiza la solicitud exactamente como el navegador lo haría
-        return await $fetch(url, {
-            method: "GET", // Método explícito
-        });
-    }
-    
-
+    // Manejar métodos que envían datos en el body
     if (["POST", "PUT", "PATCH"].includes(method)) {
-        if (headers["Content-Type"] === "application/json") {
-            reqOpts.body = await readBody(event);
-        } else {
-            reqOpts.body = await readRawBody(event, false);
-        }
+        reqOpts.body = headers["Content-Type"] === "application/json"
+            ? await readBody(event)
+            : await readRawBody(event, false);
     }
 
     try {
         let url = `${API_URL}/${route}/`;
-
+        console.log("🌍 Fetch a:", url);
+        console.log("🔧 Opciones:", reqOpts);
         const response = await $fetch(url, reqOpts);
         return response;
     } catch (error) {
         if (error instanceof FetchError) {
             setResponseStatus(event, error.statusCode);
+            console.error("⚠️ FetchError:", error.statusCode, error.data);
+            
+            // Intentar refrescar token si expira
             if (error.statusCode === 401 && refreshToken) {
-                // Si el token ha expirado, intenta refrescarlo
                 const refreshed = await refreshAccessToken(refreshToken);
                 if (refreshed) {
                     headers["Authorization"] = `Bearer ${refreshed.accessToken}`;
-                    const retryResponse = await $fetch(url, reqOpts);
-                    return retryResponse;
+                    return await $fetch(url, reqOpts);
                 }
             }
             return error.data;
         }
         setResponseStatus(event, 500);
+        console.error("❌ Error inesperado:", error);
         return { error: JSON.stringify(error) };
     }
 });

@@ -1,0 +1,271 @@
+{
+    "id": 3,
+    "categories_full": [
+      {
+        "id": 1,
+        "concept_to_name": "Planes de Entrenamiento - Plan Becado",
+        "concept_to_id": 10,
+        "concept_from_name": "Campeonatos - Pony Malta",
+        "early_payments_full": [
+          {
+            "description": "Pago 70/30 Torneos",
+            "cc_calculated_early_payment": [
+              {
+                "date_cc": "2025-05-02",
+                "total_amount": 42000,
+                "doc_type": "CC",
+                "observations": "Cuota 1 de 3, 42000.00 cada una."
+              },
+              {
+                "date_cc": "2025-05-27",
+                "total_amount": 9000,
+                "doc_type": "CC",
+                "observations": "Cuota 2 de 3, 9000.00 cada una."
+              },
+              {
+                "date_cc": "2025-06-21",
+                "total_amount": 9000,
+                "doc_type": "CC",
+                "observations": "Cuota 3 de 3, 9000.00 cada una."
+              }
+            ]
+          },
+          {
+            "description": "Pago 100/100 Torneo",
+            "cc_calculated_early_payment": [
+              {
+                "date_cc": "2025-06-16",
+                "total_amount": 60000,
+                "doc_type": "CC",
+                "observations": "Pago único de 60000.00."
+              }
+            ]
+          }
+        ],
+        "groups_full": [
+          {
+            "id": 2,
+            "name": "Blue",
+            "description": null
+          },
+          {
+            "id": 1,
+            "name": "Red",
+            "description": ""
+          }
+        ],
+        "conceptrelationgroupstudent_id": null,
+        "conceptrelationgroupstudent__students": [],
+        "price": "60000.00",
+        "concept_from": 3,
+        "concept_to": 10,
+        "groups": [2, 1]
+      },
+      {
+        "id": 2,
+        "concept_to_name": "Planes de Entrenamiento - Plan Entrena",
+        "concept_to_id": 9,
+        "concept_from_name": "Campeonatos - Pony Malta",
+        "early_payments_full": [
+          {
+            "description": "Pago 70/30 Torneos",
+            "cc_calculated_early_payment": [
+              {
+                "date_cc": "2025-05-02",
+                "total_amount": 49000,
+                "doc_type": "CC",
+                "observations": "Cuota 1 de 3, 49000.00 cada una."
+              },
+              {
+                "date_cc": "2025-05-27",
+                "total_amount": 10500,
+                "doc_type": "CC",
+                "observations": "Cuota 2 de 3, 10500.00 cada una."
+              },
+              {
+                "date_cc": "2025-06-21",
+                "total_amount": 10500,
+                "doc_type": "CC",
+                "observations": "Cuota 3 de 3, 10500.00 cada una."
+              }
+            ]
+          },
+          {
+            "description": "Pago 100/100 Torneo",
+            "cc_calculated_early_payment": [
+              {
+                "date_cc": "2025-06-16",
+                "total_amount": 70000,
+                "doc_type": "CC",
+                "observations": "Pago único de 70000.00."
+              }
+            ]
+          }
+        ],
+        "groups_full": [
+          {
+            "id": 1,
+            "name": "Red",
+            "description": ""
+          }
+        ],
+        "conceptrelationgroupstudent_id": null,
+        "conceptrelationgroupstudent__students": [],
+        "price": "70000.00",
+        "concept_from": 3,
+        "concept_to": 9,
+        "groups": [1]
+      },
+      {
+        "id": 4,
+        "concept_to_name": "Planes de Entrenamiento - Plan Semillero",
+        "concept_to_id": 8,
+        "concept_from_name": "Campeonatos - Pony Malta",
+        "early_payments_full": [
+          {
+            "description": "Pago 70/30 Torneos",
+            "cc_calculated_early_payment": [
+              {
+                "date_cc": "2025-05-02",
+                "total_amount": 63000,
+                "doc_type": "CC",
+                "observations": "Cuota 1 de 3, 63000.00 cada una."
+              },
+              {
+                "date_cc": "2025-05-27",
+                "total_amount": 13500,
+                "doc_type": "CC",
+                "observations": "Cuota 2 de 3, 13500.00 cada una."
+              },
+              {
+                "date_cc": "2025-06-21",
+                "total_amount": 13500,
+                "doc_type": "CC",
+                "observations": "Cuota 3 de 3, 13500.00 cada una."
+              }
+            ]
+          },
+          {
+            "description": "Pago 100/100 Torneo",
+            "cc_calculated_early_payment": [
+              {
+                "date_cc": "2025-06-16",
+                "total_amount": 90000,
+                "doc_type": "CC",
+                "observations": "Pago único de 90000.00."
+              }
+            ]
+          }
+        ],
+        "groups_full": [
+          {
+            "id": 2,
+            "name": "Blue",
+            "description": null
+          }
+        ],
+        "conceptrelationgroupstudent_id": 1,
+        "conceptrelationgroupstudent__students": [
+          {
+            "id": 1,
+            "students_full": [
+              {
+                "id": 62,
+                "students": [],
+                "type": "STUDENT",
+                "first_name": "sasaa",
+                "last_name": "asasa",
+                "id_number": 212121,
+                "email": "asasa@asasa.com",
+                "phone": "1212112",
+                "created_at": "2025-02-06T17:12:39.996477-05:00",
+                "updated_at": "2025-02-06T23:02:29.795746-05:00",
+                "date_birth": "1986-01-01",
+                "image": null,
+                "user": null,
+                "parent": 61,
+                "training_plan": 8,
+                "locations": [1]
+              }
+            ],
+            "min_students": 1,
+            "max_students": 1,
+            "concept_relation": 4,
+            "group": 1,
+            "students": [62]
+          }
+        ],
+        "price": "90000.00",
+        "concept_from": 3,
+        "concept_to": 8,
+        "groups": [2]
+      },
+      {
+        "id": 3,
+        "concept_to_name": "Planes de Entrenamiento - Plan Cantera",
+        "concept_to_id": 7,
+        "concept_from_name": "Campeonatos - Pony Malta",
+        "early_payments_full": [
+          {
+            "description": "Pago 70/30 Torneos",
+            "cc_calculated_early_payment": [
+              {
+                "date_cc": "2025-05-02",
+                "total_amount": 56000,
+                "doc_type": "CC",
+                "observations": "Cuota 1 de 3, 56000.00 cada una."
+              },
+              {
+                "date_cc": "2025-05-27",
+                "total_amount": 12000,
+                "doc_type": "CC",
+                "observations": "Cuota 2 de 3, 12000.00 cada una."
+              },
+              {
+                "date_cc": "2025-06-21",
+                "total_amount": 12000,
+                "doc_type": "CC",
+                "observations": "Cuota 3 de 3, 12000.00 cada una."
+              }
+            ]
+          },
+          {
+            "description": "Pago 100/100 Torneo",
+            "cc_calculated_early_payment": [
+              {
+                "date_cc": "2025-06-16",
+                "total_amount": 80000,
+                "doc_type": "CC",
+                "observations": "Pago único de 80000.00."
+              }
+            ]
+          }
+        ],
+        "groups_full": [
+          {
+            "id": 2,
+            "name": "Blue",
+            "description": null
+          }
+        ],
+        "conceptrelationgroupstudent_id": null,
+        "conceptrelationgroupstudent__students": [],
+        "price": "80000.00",
+        "concept_from": 3,
+        "concept_to": 7,
+        "groups": [2]
+      }
+    ],
+    "concept_type_name": "Campeonatos",
+    "code": "CP",
+    "name": "Pony Malta",
+    "price": "0.00",
+    "description": "Torneo PonyFutbol 2025, lorem ipsum dolor sit amet consectetur",
+    "date": "2025-07-01",
+    "image": "http://localhost:8000/media/concepts/pm.jpeg",
+    "visible": true,
+    "concept_type": 2,
+    "accountaux": 8,
+    "early_payment": [7, 8],
+    "training_plans": [10, 9, 8, 7]
+  }

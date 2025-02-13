@@ -1,17 +1,20 @@
 
-
 import { jwtDecode } from "jwt-decode";
 import { useCookie } from 'nuxt/app';
 
 const publicRoutes = [
   "/",
   "/home",
-  "/public/check-login-status/",  // Excepción para el endpoint 'public/check-login-status'
+  "/championship",
+  "/club",
+  "/sportsvenue",  
 ];
 
 export default defineNuxtRouteMiddleware((to) => {
-  if (publicRoutes.includes(to.path)) {
-    return; // Saltar la autenticación para rutas públicas
+  console.log("Middleware de autenticación global", to.path, to.fullPath);
+  if (publicRoutes.includes(to.path) || to.fullPath.includes("api")) {
+    console.log("Ignoramos la ruta pública");
+    return;
   }
 
   const accessToken = useCookie('token');
@@ -24,7 +27,7 @@ export default defineNuxtRouteMiddleware((to) => {
   let decodedToken;
   try {
     decodedToken = jwtDecode(accessToken.value);
-    //console.log("Tenemos token");
+    console.log("Tenemos token");
     if (!decodedToken || !decodedToken.exp) {
       return navigateTo("/");
     }
@@ -54,7 +57,7 @@ export default defineNuxtRouteMiddleware((to) => {
       });
     }
   } else {
-    const CURRENT_USER_PATH = '/api/auth/users/me/';
+    const CURRENT_USER_PATH = '/api/me';
     const useUserStorage = useAuthUserStorage();
     if (decodedToken.user_id !== useUserStorage.value.id) {
       $fetch(CURRENT_USER_PATH).then((response) => {

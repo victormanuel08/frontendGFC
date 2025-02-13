@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+    <div class=" bg-gray-100 flex flex-col items-center justify-center">
       <header class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-800">Bienvenido a Gamero FC</h1>
         <p class="text-lg text-gray-600 mt-2">Tu plataforma de gestión simplificada</p>

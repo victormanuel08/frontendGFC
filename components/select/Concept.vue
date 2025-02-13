@@ -1,7 +1,7 @@
 <template>
     <USelectMenu
         v-model="modelValue"
-        option-attribute="doc_name"
+        option-attribute="name"
         :options="options"
         :searchable="true"
         v-model:query="query"
@@ -19,17 +19,17 @@ const query = ref("");
 const modelValue = ref<any>({}); // Aquí usas un modelo vacío por defecto
 
 // Propiedades
-type Props = {  
-    parent?: any; 
-    student?: any;  
-    doc_type?: string;
-    isPayment?: boolean;
+type Props = {      
+    concept_type?: concept
+};
+
+type concept = {
+    id: number;
+    name: string;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-    parent: {},
-    student: {},
-    doc_type: '',  
+   concept_type: undefined
 });
 
 // Función para manejar el click
@@ -40,31 +40,22 @@ const clickHandler = () => {
 // Función para recuperar los datos desde la API
 const retrieveFromApi = async () => {
     const queryParams: any = { search: query.value };
-    queryParams.doc_type = props.doc_type; 
-    if (props.parent) {
-        queryParams.parent = props.parent.id;
+    
+    if (props.concept_type) {
+        queryParams.concept_type = props.concept_type.id;
     }
-    if (props.student) {
-        queryParams.student = props.student.id;
-    }    
- 
-    const response = await $fetch<any>("api/documents/documents", {
+  
+    const response = await $fetch<any>("api/documents/concepts", {
         query: queryParams
     });   
-
-    if (props.isPayment) {
-        // Filtarr los que cxc esten null osea traerme solo los que cxc esten vacios
-        options.value = response.results.filter((item: any) => !item.rc_calculated);  
-    }else{
-        options.value = response.results; 
-    }    
+    options.value = response.results;  
 };
 
 // Observar cambios en el query y specialities
 watch(
-    [query, () => props.parent],
-    async ([newQuery, newParent], [oldQuery, oldParent]) => {
-        if (oldParent !== newParent) {           
+    [query, () => props.concept_type],
+    async ([newQuery, newConcept], [oldQuery, oldConcept]) => {
+        if (oldConcept !== newConcept) {           
             modelValue.value = {};
         }       
         retrieveFromApi();
