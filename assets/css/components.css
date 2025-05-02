@@ -1,0 +1,85 @@
+/* =============== MODAL =============== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+  }
+  
+  .modal {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+    animation: modalFadeIn 0.3s ease-out;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  /* =============== FORMULARIO =============== */
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  /* =============== BOTONES ESPECÍFICOS =============== */
+  .btn-submit {
+    background-color: var(--primary);
+    color: white;
+  }
+  
+  .btn-submit:hover {
+    background-color: color-mix(in srgb, var(--primary) 90%, black);
+  }
+  
+  .btn-cancel {
+    background-color: var(--tertiary);
+    color: white;
+  }
+  
+  .btn-cancel:hover {
+    background-color: color-mix(in srgb, var(--tertiary) 90%, black);
+  }
+  
+  /* =============== ENLACES =============== */
+  .forgot-password {
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+  
+  .forgot-password a {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: opacity 0.3s ease;
+  }
+  
+  .forgot-password a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }

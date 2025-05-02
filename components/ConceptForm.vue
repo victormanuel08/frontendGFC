@@ -1,141 +1,138 @@
 <template>
-    <!-- Modal del Formulario de Pago -->
+    <!-- Modal del Formulario de Concepto -->
     <div class="modal-overlay" @click.self="closeModal">
-        <div class="payment-form" :class="modalWidth">
-            <h2>{{ isEdit ? 'Editar' : 'Crear' }} {{ props.conceptType?.name }}</h2>
-            <form @submit.prevent="handleSubmit" enctype="multipart/form-data">
-                <div :class="['grid gap-4', thirdTypeClass]">
-                    <div>
-                        <div class="input-group">
-                            <label for="code">Código</label>
-                            <UInput v-model="code" required />
-                        </div>
-                        <div class="input-group">
-                            <label for="name">Nombre</label>
-                            <UInput v-model="name" required />
-                        </div>
-                        <div class="input-group">
-                            <label for="description">Descripción</label>
-                            <UInput v-model="description" required />
-                        </div>
-                                               
-                        <div class="input-group">
-                            <label for="acountaux">Cuenta Auxiliar</label>
-                            <SelectAccountAux v-model="acountaux" />
-                        </div>
-                        
-                    </div>
-                    <div>
-                        <div class="input-group" v-if="props.conceptType.code == 'CC'">
-                            <label for="date">Fecha</label>
-                            <UInput type="date" v-model="date" required />
-                        </div>
-                        <div class="input-group" v-if="props.conceptType.code != 'CC'">
-                            <label for="price">Valor</label>
-                            <UInput v-model="price" />
-                        </div>
-                        <div class="input-group" v-if="props.conceptType.code != 'CL'">
-                            <label for="image">Imagen</label>
-                            <UInput type="file" @change="handleFileUpload" required />
-                        </div>
-                    </div>
-                </div>
-                <div class="button-group">
-                    <button type="submit" class="submit-btn">{{ isEdit ? 'Editar' : 'Crear' }} {{ props.conceptType?.name }}</button>
-                    <button type="button" class="cancel-btn" @click="closeModal">Cancelar</button>
-                </div>
-            </form>
-        </div>
+      <div class="payment-form" :class="modalWidth">
+        <h2>{{ isEdit ? 'Editar' : 'Crear' }} {{ props.conceptType?.name }}</h2>
+        <form @submit.prevent="handleSubmit" enctype="multipart/form-data">
+          <div :class="['grid gap-4', thirdTypeClass]">
+            <div>
+              <div class="input-group">
+                <label for="code">Código</label>
+                <UInput v-model="code" required />
+              </div>
+              <div class="input-group">
+                <label for="name">Nombre</label>
+                <UInput v-model="name" required />
+              </div>
+              <div class="input-group">
+                <label for="description">Descripción</label>
+                <UInput v-model="description" required />
+              </div>
+              <div class="input-group">
+                <label for="acountaux">Cuenta Auxiliar</label>
+                <SelectAccountAux v-model="acountaux" />
+              </div>
+            </div>
+            <div>
+              <div class="input-group" v-if="props.conceptType.code == 'CC'">
+                <label for="date">Fecha</label>
+                <UInput type="date" v-model="date" required />
+              </div>
+              <div class="input-group" v-if="props.conceptType.code != 'CC'">
+                <label for="price">Valor</label>
+                <UInput v-model="price" />
+              </div>
+              <div class="input-group" v-if="props.conceptType.code != 'CL'">
+                <label for="image">Imagen</label>
+                <input type="file" @change="handleFileUpload" required />
+              </div>
+            </div>
+          </div>
+          <div class="button-group">
+            <button type="submit" class="submit-btn">{{ isEdit ? 'Editar' : 'Crear' }} {{ props.conceptType?.name }}</button>
+            <button type="button" class="cancel-btn" @click="closeModal">Cancelar</button>
+          </div>
+        </form>
+      </div>
     </div>
-</template>
-
-<script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue';
-
-const thirdTypeClass = computed(() => props.thirdType === 'STUDENT' ? 'grid-cols-2' : 'grid-cols-1');
-const modalWidth = computed(() => props.thirdType === 'STUDENT' ? 'max-w-600' : 'max-w-400');
-
-// Definir props correctamente
-const props = defineProps({
+  </template>
+  
+  <script setup lang="ts">
+  import { ref, computed, defineProps, defineEmits } from 'vue';
+  
+  const thirdTypeClass = computed(() => props.thirdType === 'STUDENT' ? 'grid-cols-2' : 'grid-cols-1');
+  const modalWidth = computed(() => props.thirdType === 'STUDENT' ? 'max-w-600' : 'max-w-400');
+  
+  // Definir props correctamente
+  const props = defineProps({
     isOpen: Boolean,
     conceptType: Object,
-});
-
-// Emitir eventos
-const emit = defineEmits(['close', 'saved']);
-
-// Computed para verificar si es edición
-const isEdit = computed(() => !!props.thirdId);
-const conceptPlan = { id: 1, name: 'Planes de Entrenamiento' }
-
-// Computed para obtener la etiqueta correcta
-const thirdTypeLabel = computed(() => {
-    return props.thirdType === 'PARENT' ? 'Padre' : 'Estudiante';
-});
-
-// Variables reactivas del formulario
-const name = ref('');
-const code = ref('');
-const price = ref('');
-const description = ref('');
-const acountaux = ref({});
-const concept_type = ref({});
-const date = ref('');
-const image = ref(null);
-
-// Método para manejar el cambio de archivo
-const handleFileUpload = (event) => {
-    image.value = event.target.files[0];
-};
-
-// Método de envío del formulario
-const handleSubmit = () => {
+  });
+  
+  // Emitir eventos
+  const emit = defineEmits(['close', 'saved']);
+  
+  // Computed para verificar si es edición
+  const isEdit = computed(() => !!props.thirdId);
+  
+  // Variables reactivas del formulario
+  const name = ref('');
+  const code = ref('');
+  const price = ref('');
+  const description = ref('');
+  const acountaux = ref({});
+  const concept_type = ref({});
+  const date = ref('');
+  const image = ref<File | null>(null);
+  
+  // Método para manejar el cambio de archivo
+  const handleFileUpload = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+      image.value = target.files[0];
+    }
+  };
+  
+  // Método de envío del formulario
+  const handleSubmit = () => {
     if (isEdit.value) {
-        updateConcept();
+      updateConcept();
     } else {
-        createConcept();
+      createConcept();
     }
-};
-
-const createConcept = async () => {
+  };
+  
+  const createConcept = async () => {
     const message = confirm('¿Estás seguro de crear este Concepto?');
-
+  
     if (!message) {
-        resetForm();
-        return;
+      resetForm();
+      return;
     }
-
+  
     if (props.conceptType.code === 'CC') {
-        alert('Campeonato.');
-        //return;
+      alert('Campeonato.');
+      //return;
     }
-
+  
     try {
-        const formData = new FormData();
-        formData.append('code', code.value);
-        formData.append('name', name.value);
-        formData.append('price', price.value ? parseFloat(price.value) : 0);
-        formData.append('description', description.value);
-        formData.append('account_aux', acountaux.value ? acountaux.value.id : null);
-        formData.append('concept_type', props.conceptType ? props.conceptType : null);
+      const formData = new FormData();
+      formData.append('code', code.value);
+      formData.append('name', name.value);
+      formData.append('price', price.value ? parseFloat(price.value) : 0);
+      formData.append('description', description.value);
+      formData.append('account_aux', acountaux.value ? acountaux.value.id : null);
+      formData.append('concept_type', props.conceptType.id ? props.conceptType.id : null);
+      if (image.value) {
         formData.append('image', image.value);
-        formData.append('date', date.value);
-
-        const response = await $fetch('api/documents/concepttypes', {
-            method: 'POST',
-            body: formData,
-        });
-
-        resetForm();
-        emit('close');
+      }
+      formData.append('date', date.value);
+  
+      const response = await $fetch('api/documents/concepttypes', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      resetForm();
+      emit('close');
     } catch (error) {
-        console.error('Error al crear el Concepto:', error);
-        alert('Ocurrió un error al crear el Concepto.');
+      console.error('Error al crear el Concepto:', error);
+      alert('Ocurrió un error al crear el Concepto.');
     }
-};
-
-// Función para resetear el formulario
-const resetForm = () => {
+  };
+  
+  // Función para resetear el formulario
+  const resetForm = () => {
     name.value = '';
     code.value = '';
     price.value = '';
@@ -144,13 +141,14 @@ const resetForm = () => {
     concept_type.value = {};
     date.value = '';
     image.value = null;
-};
-
-// Método para cerrar el modal
-const closeModal = () => {
+  };
+  
+  // Método para cerrar el modal
+  const closeModal = () => {
     emit('close');
-};
-</script>
+  };
+  </script>
+  
 
 
 <style scoped>

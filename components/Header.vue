@@ -2,12 +2,12 @@
   <header class="header">
     <div class="logo-container">
       <img src="/static/navbar.png" alt="GAMERO FC Logo" class="logo-img" />
-      <NuxtLink to="/" class="logo-text">GAMERO FC</NuxtLink>
-      <div class="hamburger" @click="toggleMenu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+    </div>
+
+    <div class="hamburger" @click="toggleMenu">
+      <span></span>
+      <span></span>
+      <span></span>
     </div>
 
     <!-- Menú en pantallas grandes -->
@@ -23,7 +23,7 @@
         </li>
       </ul>
 
-      <!-- Menú lateral para pantallas pequeñas -->
+      <!-- Menú lateral en móviles -->
       <ul :class="{ open: isMenuOpen }" class="sidebar">
         <li v-for="item in menuItems" :key="item.id">
           <div @click="toggleSubMenu(item.id)" class="sidebar-item">
@@ -39,12 +39,19 @@
     </nav>
   </header>
 </template>
-<script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
 
-const menuItems = ref<mi[]>([]) // Lista de elementos del menú
-const openSubMenus = ref(new Set()) // Submenús abiertos
-const isMenuOpen = ref(false) // Estado del menú lateral
+<script setup lang="ts">
+import { ref, onMounted, watch, onUnmounted } from 'vue'
+import { useAuthTokensStorage, useAuthUserStorage, refreshToken } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+
+const { accessToken, refreshToken: storedRefreshToken } = useAuthTokensStorage()
+const user = useAuthUserStorage()
+const router = useRouter()
+const menuItems = ref<mi[]>([])
+const openSubMenus = ref(new Set())
+const isMenuOpen = ref(false)
+let tokenCheckInterval: number | null = null
 
 type mi = {
   id: number
@@ -54,10 +61,9 @@ type mi = {
   childs: mi[]
 }
 
-// Función para obtener los elementos del menú desde una API
 const fetchMenuItems = async () => {
   try {
-    const response = await fetch('api/public/menu') // Solicitar los elementos del menú
+    const response = await fetch('api/public/menu')
     const data = await response.json()
     menuItems.value = data.menu
   } catch (error) {
@@ -65,37 +71,43 @@ const fetchMenuItems = async () => {
   }
 }
 
-// Función para alternar la visibilidad del menú lateral
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value // Alternar la visibilidad del menú lateral
-}
+const validateToken = async () => {
+  if (!accessToken.value) return
 
-// Función para alternar la visibilidad de los submenús en el menú lateral
-const toggleSubMenu = (id:any) => {
-  // Cerrar todos los submenús antes de abrir el seleccionado
-  if (openSubMenus.value.has(id)) {
-    openSubMenus.value.delete(id) // Alternar submenú
-  } else {
-    openSubMenus.value.clear() // Cerrar todos los submenús antes de abrir uno nuevo
-    openSubMenus.value.add(id)
+  try {
+    const response = await fetch('api/auth/validate-token', {
+      headers: { Authorization: `Bearer ${accessToken.value}` }
+    })
+
+    if (response.status === 401) {
+      await refreshToken()
+      if (!accessToken.value) logout()
+    }
+  } catch (error) {
+    console.error('Error validando el token:', error)
   }
 }
 
-// Función para verificar si un submenú está abierto
-const isSubMenuOpen = (id:any) => {
-  return openSubMenus.value.has(id) // Comprobar si un submenú está abierto
+const logout = () => {
+  accessToken.value = null
+  storedRefreshToken.value = null
+  menuItems.value = []
+  router.push('/login')
+  clearInterval(tokenCheckInterval!)
 }
 
-// Funciones para abrir y cerrar submenús en pantallas grandes
-const openSubMenu = (id:any) => {
-  openSubMenus.value.add(id) // Abrir un submenú
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
 }
 
-const closeSubMenu = (id:any) => {
-  openSubMenus.value.delete(id) // Cerrar un submenú
+const toggleSubMenu = (id: any) => {
+  openSubMenus.value.has(id) ? openSubMenus.value.delete(id) : openSubMenus.value.add(id)
 }
 
-// Cerrar el menú lateral al maximizar la ventana
+const isSubMenuOpen = (id: any) => openSubMenus.value.has(id)
+const openSubMenu = (id: any) => openSubMenus.value.add(id)
+const closeSubMenu = (id: any) => openSubMenus.value.delete(id)
+
 const handleResize = () => {
   if (window.innerWidth > 768) {
     isMenuOpen.value = false
@@ -104,42 +116,44 @@ const handleResize = () => {
 }
 
 onMounted(() => {
-  fetchMenuItems() // Cargar los elementos del menú al montar el componente
-  window.addEventListener('resize', handleResize) // Agregar el evento de resize para cerrar el menú lateral en pantallas grandes
+  fetchMenuItems()
+  tokenCheckInterval = setInterval(validateToken, 300000)
+  window.addEventListener('resize', handleResize)
 })
 
-// Escuchar cambios en el tamaño de la ventana
-watch(() => window.innerWidth, handleResize)
+onUnmounted(() => {
+  if (tokenCheckInterval) clearInterval(tokenCheckInterval)
+  window.removeEventListener('resize', handleResize)
+})
+
+watch(() => accessToken.value, fetchMenuItems)
 </script>
+
 <style scoped>
 .header {
+  height: 80px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background: linear-gradient(to right, #091278, #f24d0c);
-  color: white;
+  padding: 0 2rem;
+  background: linear-gradient(to right, #6699CC 13.3%, #333333 46.6%, #CC3333 80%);
   position: relative;
   z-index: 10;
 }
 
 .logo-container {
+  height: 100%;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  justify-content: flex-start;
-  width: 100%;
-}
-
-.logo-text {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: white;
-  text-decoration: none;
+  padding: 5px 0;
 }
 
 .logo-img {
-  max-width: 80px;
+  height: 350%;
+  max-height: 300px;
+  width: auto;
+  object-fit: contain;
+  
 }
 
 nav {
@@ -147,7 +161,6 @@ nav {
   align-items: center;
 }
 
-/* Menú en pantallas grandes */
 .menu {
   list-style: none;
   display: flex;
@@ -166,7 +179,7 @@ nav {
 }
 
 .menu a:hover {
-  color: #091278; /* Cambia a azul */
+  color: #091278;
 }
 
 .menu li ul {
@@ -185,19 +198,22 @@ nav {
 }
 
 .menu li ul li a:hover {
-  color: #f24d0c; /* Cambia a rojo */
+  color: #f24d0c;
 }
 
 .menu li:hover > ul {
   display: block;
 }
 
-/* Menú lateral para pantallas pequeñas */
 .hamburger {
   display: none;
   flex-direction: column;
   cursor: pointer;
   gap: 0.3rem;
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .hamburger span {
@@ -215,11 +231,11 @@ nav {
   flex-direction: column;
   align-items: flex-start;
   position: fixed;
-  top: 60px; /* Comienza justo debajo del header */
+  top: 60px;
   left: 0;
   width: 100%;
-  background: rgba(255, 255, 255, 0.5); /* Fondo transparente */
-  backdrop-filter: blur(10px); /* Efecto de desenfoque */
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
   color: black;
   padding: 1rem;
   overflow-y: auto;
@@ -235,13 +251,13 @@ nav {
   margin: 0.5rem 0;
   font-weight: bold;
   padding: 0.5rem;
-  border-radius: 15px; /* Botón redondeado */
+  border-radius: 15px;
   transition: background-color 0.3s;
 }
 
 .sidebar-item:hover {
-  background-color: #f24d0c; /* Cambiar fondo al pasar el ratón */
-  color: white; /* Texto blanco al pasar el ratón */
+  background-color: #f24d0c;
+  color: white;
 }
 
 .sidebar a {
@@ -254,49 +270,39 @@ nav {
 }
 
 @media (max-width: 768px) {
-  .logo-container {
-    justify-content: center;
-  }
-
-  .logo-text {
-    order: 1;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: white;
+  .header {
+    height: 60px;
+    padding: 0 1rem;
   }
 
   .logo-img {
-    order: 0;
-    max-width: 60px;
-  }
-
-  .hamburger {
-    display: flex;
-    position: absolute;
-    left: 1rem;
+    max-height: 50px;
+    margin-left: 40px;
   }
 
   .menu {
     display: none;
   }
 
-  .sidebar {
-    top: 60px; /* Ajuste debajo del header */
+  .hamburger {
+    display: flex;
   }
 
   .sidebar.open {
-    top: 60px; /* Se despliega debajo del header */
+    top: 60px;
   }
 }
 
-@media (min-width: 768px) {
-  .logo-container {
-    justify-content: flex-start;
+@media (min-width: 769px) {
+  .sidebar {
+    display: none !important;
   }
+}
 
-  .logo-text {
-    margin-left: 10px;
+@media (max-width: 480px) {
+  .logo-img {
+    margin-left: 35px;
+    max-height: 45px;
   }
 }
 </style>
-

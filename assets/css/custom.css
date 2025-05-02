@@ -1,0 +1,77 @@
+/* CUSTOM.CSS Colores CMYK/RGB proporcionados */
+:root {
+  --primary: #6699CC;     /* CMYK 68-28-9-0 */
+  --secondary: #333333;   /* CMYK 77-70-68-48 */
+  --tertiary: #999999;    /* CMYK 45-34-35-0 */
+  --accent: #CC3333;      /* CMYK 7-90-78-0 */
+}
+
+/* Estilos base para inputs y selects */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #D1D5DB; /* gray-300 */
+  border-radius: 0.5rem; /* rounded-lg */
+  transition: all 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary);
+  border-color: transparent;
+}
+
+/* Botones base */
+/* Aplicar estilos base a TODOS los elementos */
+button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  background-color: var(--primary); /* Color por defecto */
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Estilos específicos para tipos de botón */
+button[type="submit"] {
+  background-color: var(--primary);
+}
+
+button[type="reset"] {
+  background-color: var(--accent);
+}
+
+/* Si quieres mantener clases para variantes */
+.btn-secondary {
+  background-color: var(--secondary);
+}
+
+.btn-tertiary {
+  background-color: var(--tertiary);
+}
+
+/* =============== MEJORAS PARA INPUTS =============== */
+input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--tertiary);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(102, 153, 204, 0.2);
+  outline: none;
+}

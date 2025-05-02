@@ -6,17 +6,24 @@
             <form @submit.prevent="handleSubmit">
                 <div :class="['grid gap-4', thirdTypeClass]">
                     <div>
-                        <div class="input-group" v-if="props.thirdType === 'STUDENT'">
-                            <label for="parent">Padre</label>
+                        <div class="input-group" v-if="props.thirdType === 'STUDENT' && !props.thirdId">
+                            <label for="parent">Responsable</label>
                             <SelectThird type="PARENT" v-model="payer" required />
                         </div>
                         <div class="input-group" v-if="props.thirdType === 'STUDENT'">
                             <label for="location">Sede Deportiva</label>
                             <SelectLocation v-model="location" required />
                         </div>
-                        <div class="input-group" v-if="props.thirdType === 'STUDENT'">
+                        
+                        
+                        <div class="input-group" v-if="props.thirdType === 'STUDENT' && !props.concept">
                             <label for="concept">Concepto</label>
-                            <SelectConcept v-model="concept" :concept_type="conceptPlan" required />
+                            <SelectConcept v-model="concept" :concept_type="concept" required />
+                        </div>
+
+                        <div class="input-group" v-if="props.thirdType === 'STUDENT'">
+                            <label >Plan</label>
+                            <SelectConcept v-model="conceptP" :concept_type="conceptPlan" required />
                         </div>
                     </div>
                     <div>
@@ -47,40 +54,52 @@
                     </div>
                 </div>
                 <div class="button-group">
-                    <button type="submit" class="submit-btn">{{ isEdit ? 'Editar' : 'Crear' }} {{ thirdTypeLabel
-                        }}</button>
+                    <button type="submit" class="submit-btn">{{ isEdit ? 'Editar' : 'Crear' }} {{ thirdTypeLabel }}</button>
                     <button type="button" class="cancel-btn" @click="closeModal">Cancelar</button>
                 </div>
-
             </form>
         </div>
     </div>
 </template>
-
 <script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue';
+import { ref, computed, defineProps, defineEmits, onMounted } from 'vue';
+import Swal from 'sweetalert2';
 
 const thirdTypeClass = computed(() => props.thirdType === 'STUDENT' ? 'grid-cols-2' : 'grid-cols-1');
 const modalWidth = computed(() => props.thirdType === 'STUDENT' ? 'max-w-600' : 'max-w-400');
-
-
+const conceptPlan = { id: 1, name: 'Planes de Entrenamiento' }
 // Definir props correctamente
 const props = defineProps({
     isOpen: Boolean,
-    thirdId: Number,
+    thirdId: Number, // ID del padre
+    thirdIdPropio: Number, // ID del estudiante
     thirdType: String,
+    concept: String
+});
+
+onMounted(() => {
+    if (props.concept) {
+        concept.value = props.concept;
+    }
+    if (props.thirdId) {
+        payer.value = { id: props.thirdId };
+    }
+    if (props.thirdIdPropio) {
+        // Cargar los datos del estudiante para edición si está presente
+        loadStudentData(props.thirdIdPropio);
+    }
 });
 
 // Emitir eventos
 const emit = defineEmits(['close', 'saved']);
 
 // Computed para verificar si es edición
-const isEdit = computed(() => !!props.thirdId);
-const conceptPlan = { id: 1, name: 'Planes de Entrenamiento' }
+const isEdit = computed(() => !!props.thirdIdPropio);
+
 
 // Computed para obtener la etiqueta correcta
 const thirdTypeLabel = computed(() => {
-    return props.thirdType === 'PARENT' ? 'Padre' : 'Estudiante';
+    return props.thirdType === 'PARENT' ? 'Responsable' : 'Estudiante';
 });
 
 // Variables reactivas del formulario
@@ -93,6 +112,8 @@ const date_birth = ref('');
 const payer = ref(null);
 const location = ref(null);
 const concept = ref(null);
+const conceptP = ref(null);
+
 
 // Método de envío del formulario
 const handleSubmit = () => {
@@ -102,25 +123,53 @@ const handleSubmit = () => {
         createThird();
     }
 };
+
+// Cargar datos del estudiante para edición
+const loadStudentData = async (studentId) => {
+  try {
+    const response = await $fetch(`api/entities/thirds/${studentId}`);
+    const data = await response.json();
+
+    // Asignar los datos cargados a las variables reactivas
+    first_name.value = data.first_name;
+    last_name.value = data.last_name;
+    id_number.value = data.id_number;
+    email.value = data.email;
+    phone.value = data.phone;
+    date_birth.value = data.date_birth;
+    location.value = data.location ? data.location.id : null;
+    concept.value = data.training_plan ? data.training_plan.id : null;
+    training_plan.value = data.training_plan ? data.training_plan.id : null;
+  } catch (error) {
+    console.error('Error al cargar datos del estudiante:', error);
+  }
+};
+
 const createThird = async () => {
-    const message = confirm('¿Estás seguro de crear este Tercero?');
+    const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: '¿Estás seguro de crear este Tercero?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, crear',
+        cancelButtonText: 'Cancelar'
+    });
 
-    if (!message) {
+    if (!result.isConfirmed) {
         resetForm();
-        return;
-    }
-
-    if (props.thirdType === 'STUDENT' && !payer.value) {
-        alert('Por favor selecciona un Padre.');
         return;
     }
 
     try {
         const response = await $fetch('api/entities/thirds', {
             method: 'POST',
-            body: {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
                 type: props.thirdType,
-                parent: payer.value ? payer.value.id : null, // Evita el error si es null
+                parent: props.thirdId ? props.thirdId : (payer.value ? payer.value.id : null), // Evita el error si es null
                 first_name: first_name.value,
                 last_name: last_name.value,
                 id_number: id_number.value,
@@ -128,16 +177,28 @@ const createThird = async () => {
                 phone: phone.value,
                 date_birth: date_birth.value,
                 location: location.value ? location.value.id : null,
-                training_plan: concept.value ? concept.value.id : null,
-                
-            },
+                training_plan: conceptP.value ? conceptP.value.id : null,
+            })
         });
 
         resetForm();
+        emit('saved'); // Emitir evento 'saved' después de la creación
         emit('close');
+        Swal.fire({
+            title: 'Éxito',
+            text: 'Tercero creado exitosamente.',
+            icon: 'success',
+            confirmButtonText: 'Aceptar'
+        });
     } catch (error) {
         console.error('Error al crear el tercero:', error);
-        alert('Ocurrió un error al crear el tercero.');
+        Swal.fire({
+            title: 'Error',
+            text: error.data?.message || 'Ocurrió un error al crear el Tercero',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+        emit('close');
     }
 };
 
@@ -154,12 +215,12 @@ const resetForm = () => {
     payer.value = null;
 };
 
-
 // Método para cerrar el modal
 const closeModal = () => {
     emit('close');
 };
 </script>
+
 
 <style scoped>
 /* Fondo oscuro para el overlay */
