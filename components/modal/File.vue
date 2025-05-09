@@ -4,149 +4,128 @@
     @update:model-value="$emit('update:isOpen', $event)" 
     @close="closeModal"
     :ui="{ 
-      width: 'sm:max-w-3xl',
-      container: 'items-center' 
+      width: 'sm:max-w-5xl',
+      container: 'items-center',
+      padding: 'p-0'
     }"
   >
-    <UCard class="overflow-hidden" :ui="{ base: 'max-h-[90vh] overflow-y-auto' }">
+    <UCard class="overflow-hidden" :ui="{ 
+      base: 'max-h-[80vh] overflow-y-auto',
+      body: { padding: 'px-4 py-4 sm:p-4' },
+      header: { padding: 'px-4 py-3 sm:px-6' },
+      footer: { padding: 'px-4 py-3 sm:px-6' }
+    }">
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold">
-            {{ mode === 'create' ? 'Subir nuevo archivo' : 'Editar archivo' }}
+            {{ mode === 'create' ? 'Subir archivo' : 'Editar archivo' }}
           </h3>
           <UButton 
             color="gray" 
             variant="ghost" 
             icon="i-heroicons-x-mark-20-solid" 
             @click="closeModal" 
+            class="-my-1"
             aria-label="Cerrar modal"
           />
         </div>
       </template>
 
-      <div class="space-y-4 px-6 pb-4">
-        <!-- Primera fila: Nombre y Visibilidad -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Nombre del archivo (ocupa 2/3) -->
-          <div class="md:col-span-2">
-            <UFormGroup label="Nombre del archivo*" required :error="errors.name">
-              <UInput 
-                v-model="localFormData.name" 
-                placeholder="Ej: Contrato de servicios 2023" 
-                :disabled="isSubmitting"
-              />
-            </UFormGroup>
-          </div>
-          
-          <!-- Visibilidad (ocupa 1/3) -->
-          <div class="flex items-end">
-            <UFormGroup label="Visible para cliente" class="w-full">
-              <div class="flex items-center">
-                <UToggle 
-                  v-model="localFormData.visible_for_client" 
-                  :disabled="isSubmitting"
-                />
-                <span class="ml-2 text-sm text-gray-500">
-                  {{ localFormData.visible_for_client ? 'Sí' : 'No' }}
-                </span>
-              </div>
-            </UFormGroup>
-          </div>
-        </div>
-
-        <!-- Segunda fila: Tipo y Año legal -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Tipo de archivo -->
-          <div>
-            <UFormGroup label="Tipo de archivo*" required :error="errors.filetype">
-              <SelectFileType 
-                v-model="localFormData.filetype" 
-                @update:model-value="loadSubtypes"
-                :disabled="isSubmitting"
-                class="w-full"
-                :ui="{
-                  width: 'w-full',
-                  menu: { width: 'w-full' },
-                  option: { white: 'whitespace-nowrap truncate' }
-                }"
-              />
-            </UFormGroup>
-          </div>
-          
-          <!-- Subtipo de archivo (debajo del tipo en móvil) -->
-          <div>
-            <UFormGroup label="Subtipo de archivo">
-              <SelectFileSubType 
-                v-model="localFormData.filesubtype" 
-                :file-type-id="localFormData.filetype?.id"
-                :disabled="!localFormData.filetype || isSubmitting"
-                class="w-full"
-                :ui="{
-                  width: 'w-full',
-                  menu: { width: 'w-full' },
-                  option: { white: 'whitespace-nowrap truncate' }
-                }"
-              />
-            </UFormGroup>
-          </div>
-          
-          <!-- Año legal -->
-          <div>
-            <UFormGroup label="Año legal*" required :error="errors.ano_legal">
-              <USelectMenu 
-                v-model="selectedYear" 
-                :options="yearOptions" 
-                placeholder="Seleccione un año" 
-                class="w-full"
-                :disabled="isSubmitting"
-                :ui="{
-                  width: 'w-full',
-                  menu: { width: 'w-full' },
-                  option: { white: 'whitespace-nowrap truncate' }
-                }"
-              >
-                <template #label>
-                  <span class="truncate">{{ selectedYear || 'Seleccione un año' }}</span>
-                </template>
-              </USelectMenu>
-            </UFormGroup>
-          </div>
-        </div>
-
-        <!-- Carga de archivo -->
-        <UFormGroup label="Archivo*" required :error="errors.file">
-          <div 
-            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-primary-500 transition-colors"
-            @click="triggerFileInput"
-          >
-            <UIcon name="i-heroicons-cloud-arrow-up" class="w-10 h-10 mx-auto text-gray-400" />
-            <p class="mt-2 font-medium text-gray-700">
-              {{ currentFile ? currentFile.name : 'Haz clic para seleccionar un archivo' }}
-            </p>
-            <p class="mt-1 text-sm text-gray-500">
-              Formatos aceptados: PDF, DOC, DOCX, XLS, XLSX
-            </p>
-            <p v-if="mode === 'edit' && initialData?.file && !currentFile" class="mt-1 text-sm text-gray-500">
-              Archivo actual: {{ initialData.file }}
-            </p>
-            <input 
-              ref="fileInput"
-              type="file" 
-              class="hidden" 
-              accept=".pdf,.doc,.docx,.xls,.xlsx" 
-              @change="handleFileUpload"
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <!-- Columna 1: Nombre -->
+        <div class="lg:col-span-2">
+          <UFormGroup label="Nombre*" required :error="errors.name" class="mb-0">
+            <UInput 
+              v-model="localFormData.name" 
+              placeholder="Ej: Contrato 2023" 
+              :disabled="isSubmitting"
             />
-          </div>
-          <p v-if="errors.file" class="mt-1 text-sm text-red-500">
-            {{ errors.file }}
-          </p>
-        </UFormGroup>
+          </UFormGroup>
+        </div>
+
+        <!-- Columna 2: Tipo -->
+        <div>
+          <UFormGroup label="Tipo*" required :error="errors.filetype" class="mb-0">
+            <SelectFileType 
+              v-model="localFormData.filetype" 
+              @update:model-value="loadSubtypes"
+              :disabled="isSubmitting"
+              :ui="{
+                width: 'w-full',
+                menu: { width: 'w-full min-w-[180px]' }
+              }"
+            />
+          </UFormGroup>
+        </div>
+
+        <!-- Columna 3: Subtipo -->
+        <div>
+          <UFormGroup label="Subtipo" class="mb-0">
+            <SelectFileSubType 
+              v-model="localFormData.filesubtype" 
+              :file-type-id="localFormData.filetype?.id"
+              :disabled="!localFormData.filetype || isSubmitting"
+              :ui="{
+                width: 'w-full',
+                menu: { width: 'w-full min-w-[180px]' }
+              }"
+            />
+          </UFormGroup>
+        </div>
+
+        <!-- Columna 4: Año y Visibilidad -->
+        <div class="space-y-2">
+          <UFormGroup label="Año*" required :error="errors.ano_legal" class="mb-0">
+            <USelectMenu 
+              v-model="selectedYear" 
+              :options="yearOptions" 
+              placeholder="Año"
+              :ui="{
+                width: 'w-full',
+                menu: { width: 'w-full min-w-[120px]' }
+              }"
+            />
+          </UFormGroup>
+          
+          <UFormGroup label="Visible" class="mb-0">
+            <div class="flex items-center space-x-2">
+              <UToggle v-model="localFormData.visible_for_client" size="sm"/>
+              <span class="text-xs text-gray-500">
+                {{ localFormData.visible_for_client ? 'Sí' : 'No' }}
+              </span>
+            </div>
+          </UFormGroup>
+        </div>
+
+        <!-- Columna 5: Archivo -->
+        <div>
+          <UFormGroup label="Archivo*" required :error="errors.file" class="mb-0">
+            <div @click="triggerFileInput" class="cursor-pointer">
+              <div v-if="currentFile" class="flex items-center p-2 bg-gray-50 rounded-lg">
+                <UIcon name="i-heroicons-document" class="text-gray-500 mr-2"/>
+                <span class="text-sm truncate">{{ currentFile.name }}</span>
+              </div>
+              <div v-else class="p-2 border border-dashed border-gray-300 rounded-lg text-center">
+                <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5 mx-auto text-gray-400"/>
+                <p class="mt-1 text-xs text-gray-500">Haz clic para subir</p>
+              </div>
+              <input 
+                ref="fileInput"
+                type="file" 
+                class="hidden" 
+                accept=".pdf,.doc,.docx,.xls,.xlsx" 
+                @change="handleFileUpload"
+              />
+            </div>
+          </UFormGroup>
+        </div>
       </div>
 
       <template #footer>
-        <div class="flex justify-end gap-3">
+        <div class="flex justify-end space-x-2">
           <UButton 
             color="gray" 
+            size="sm"
             @click="closeModal"
             :disabled="isSubmitting"
           >
@@ -154,11 +133,11 @@
           </UButton>
           <UButton 
             color="primary" 
+            size="sm"
             @click="submitForm" 
             :loading="isSubmitting"
-            :disabled="isSubmitting"
           >
-            {{ mode === 'create' ? 'Subir archivo' : 'Guardar cambios' }}
+            {{ mode === 'create' ? 'Subir' : 'Guardar' }}
           </UButton>
         </div>
       </template>
