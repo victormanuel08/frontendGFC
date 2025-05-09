@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-col gap-2">
         <div class="flex items-center gap-2">
-            <label class="block">{{ props.labelpredeterminado}}</label>
+            <label class="block">Tipo de Régimen:</label>
             <!-- Icono Agregar -->
             <button @click="handleAdd" class="p-1 text-gray-500 hover:text-green-600 transition-colors"
                 title="Agregar nuevo tipo">
@@ -35,12 +35,6 @@
         <div class="flex gap-2">
             <USelectMenu v-model="modelValue" option-attribute="name" :options="options" :searchable="true"
                 v-model:query="query" :clearSearchOnClose="true" class="flex-1">
-                <template #option="{ option: eventType }">
-                    <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded-full" :style="{ backgroundColor: eventType.color }"></div>
-                        <span>{{ eventType.name }}</span>
-                    </div>
-                </template>
             </USelectMenu>
         </div>
     </div>
@@ -52,46 +46,38 @@ import Swal from 'sweetalert2';
 
 const options = ref<any[]>([]);
 const query = ref("");
-const modelValue = defineModel<any>({default: () => ({})});
+const modelValue = defineModel<any>({default: () => ({})})
 
 onMounted(() => {
     retrieveFromApi();
-});
-
-const props = defineProps({
-    modelValue: {
-        type: Object,
-        default: () => ({})
-    },
-    labelpredeterminado: {
-        type: String,
-        default: 'Tipo de Evento',
-    }
 });
 
 const showEditorModal = async (isEdit: boolean = false) => {
     const currentItem = modelValue.value;
     
     const { value: formValues } = await Swal.fire({
-        title: `<span class="text-lg font-semibold text-gray-800">${isEdit ? 'Editar' : 'Nuevo'} Tipo de Evento</span>`,
+        title: `<span class="text-lg font-semibold text-gray-800">${isEdit ? 'Editar' : 'Nuevo'} Tipo de Régimen</span>`,
         html: `
       <div class="space-y-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Código</label>
+          <input id="code" 
+                 class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+                        uppercase placeholder-gray-400 border-gray-300" 
+                 placeholder="Ej: RG"
+                 maxlength="100"
+                 value="${isEdit ? currentItem.code : ''}"
+                 style="letter-spacing: 0.2em"
+                 oninput="this.value = this.value.toUpperCase()">
+        </div>
+        
         <div>
           <label class="block text-sm text-gray-600 mb-1">Nombre</label>
           <input id="name" 
                  class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                         placeholder-gray-400 border-gray-300" 
                  value="${isEdit ? currentItem.name : ''}"
-                 placeholder="Ej: Reunión, Vacaciones, etc."
-                 maxlength="100">
-        </div>
-        
-        <div>
-          <label class="block text-sm text-gray-600 mb-1">Color</label>
-          <input id="color" 
-                 type="color"
-                 class="w-full h-10 cursor-pointer"
-                 value="${isEdit ? currentItem.color : '#3b82f6'}">
+                 placeholder="Ej: Régimen General">
         </div>
       </div>
     `,
@@ -109,25 +95,24 @@ const showEditorModal = async (isEdit: boolean = false) => {
             cancelButton: 'px-4 py-2 text-sm font-medium mr-2'
         },
         preConfirm: () => {
+            const code = (document.getElementById('code') as HTMLInputElement)?.value.trim()
             const name = (document.getElementById('name') as HTMLInputElement)?.value.trim()
-            const color = (document.getElementById('color') as HTMLInputElement)?.value.trim()
 
             let error = ''
-            if (!name || name.length < 3) error += 'El nombre debe tener al menos 3 caracteres<br>'
-            if (name.length > 100) error += 'El nombre no puede exceder los 100 caracteres<br>'
-            if (!color || !/^#[0-9A-F]{6}$/i.test(color)) error += 'El color debe ser un código hexadecimal válido'
+            if (!code || code.length < 1 || code.length > 100) error += 'El código debe tener entre 1 y 100 caracteres<br>'
+            if (!name || name.length < 3) error += 'El nombre debe tener al menos 3 caracteres'
 
             if (error) Swal.showValidationMessage(error)
-            return { name, color }
+            return { code, name }
         },
         didOpen: () => {
             const confirmButton = Swal.getConfirmButton()
             const inputs = Swal.getPopup().querySelectorAll('input')
             
             const validateInputs = () => {
-                const nameValid = inputs[0].value.trim().length >= 3 && inputs[0].value.trim().length <= 100
-                const colorValid = /^#[0-9A-F]{6}$/i.test(inputs[1].value.trim())
-                confirmButton.disabled = !(nameValid && colorValid)
+                const codeValid = inputs[0].value.trim().length >= 1 && inputs[0].value.trim().length <= 100
+                const nameValid = inputs[1].value.trim().length >= 3
+                confirmButton.disabled = !(codeValid && nameValid)
             }
 
             validateInputs()
@@ -146,11 +131,11 @@ const handleAdd = async () => {
     
     if (formValues) {
         try {
-            const newItem = await $fetch('api/scheduledevents_types/', {
+            const newItem = await $fetch('api/regiments_types/', {
                 method: 'POST',
                 body: {
-                    name: formValues.name,
-                    color: formValues.color
+                    code: formValues.code,
+                    name: formValues.name
                 }
             });
 
@@ -160,7 +145,7 @@ const handleAdd = async () => {
             Swal.fire({
                 icon: 'success',
                 title: '¡Creado!',
-                text: 'El tipo de evento se creó correctamente',
+                text: 'El tipo se creó correctamente',
                 confirmButtonColor: '#3b82f6',
                 customClass: {
                     popup: 'rounded-xl',
@@ -178,11 +163,11 @@ const handleEdit = async () => {
     
     if (formValues) {
         try {
-            const updatedItem = await $fetch(`api/scheduledevents_types/${modelValue.value.id}/`, {
+            const updatedItem = await $fetch(`api/regiments_types/${modelValue.value.id}/`, {
                 method: 'PUT',
                 body: {
-                    name: formValues.name,
-                    color: formValues.color
+                    code: formValues.code,
+                    name: formValues.name
                 }
             });
 
@@ -192,7 +177,7 @@ const handleEdit = async () => {
             Swal.fire({
                 icon: 'success',
                 title: '¡Actualizado!',
-                text: 'El tipo de evento se editó correctamente',
+                text: 'El tipo se editó correctamente',
                 confirmButtonColor: '#3b82f6',
                 customClass: {
                     popup: 'rounded-xl',
@@ -207,8 +192,8 @@ const handleEdit = async () => {
 
 const handleDelete = async () => {
     const result = await Swal.fire({
-        title: '¿Eliminar tipo de evento?',
-        text: `Estás por eliminar: ${modelValue.value.name}`,
+        title: '¿Eliminar tipo?',
+        text: `Estás por eliminar: ${modelValue.value.concat}`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -218,14 +203,14 @@ const handleDelete = async () => {
 
     if (result.isConfirmed) {
         try {
-            await $fetch(`api/scheduledevents_types/${modelValue.value.id}/`, {
+            await $fetch(`api/regiments_types/${modelValue.value.id}/`, {
                 method: 'DELETE'
             });
             
             options.value = await retrieveFromApi();
             modelValue.value = {};
             
-            Swal.fire('Eliminado!', 'El tipo de evento fue eliminado', 'success');
+            Swal.fire('Eliminado!', 'El tipo fue eliminado', 'success');
         } catch (error) {
             showErrorAlert('eliminar');
         }
@@ -236,7 +221,7 @@ const showErrorAlert = (action: string) => {
     Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: `No se pudo ${action} el tipo de evento`,
+        text: `No se pudo ${action} el tipo`,
         confirmButtonColor: '#3b82f6',
         customClass: {
             popup: 'rounded-xl',
@@ -247,10 +232,13 @@ const showErrorAlert = (action: string) => {
 
 const retrieveFromApi = async () => {
     try {
-        const response = await $fetch<any>("api/scheduledevents_types/", {
+        const response = await $fetch<any>("api/regiments_types/", {
             query: { search: query.value }
         });
-        options.value = response.results;
+        options.value = response.results.map((item: any) => ({
+            ...item,
+            
+        }));
         return options.value;
     } catch (error) {
         console.error("Error al recuperar los datos", error);

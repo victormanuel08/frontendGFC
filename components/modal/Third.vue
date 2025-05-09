@@ -5,46 +5,34 @@
       <form @submit.prevent="submitForm">
         <!-- Select Tipo de Persona -->
         <div class="form-group">
-          <SelectThirdTypes
-            v-model="type_full"
-            @change="loadRegiments"
-            :icons="false"
-            :labelpredeterminado="'Tipo de Persona'"
-            />
+          <SelectThirdTypes v-model="type_full" @change="loadRegiments" :icons="false"
+            :labelpredeterminado="'Tipo de Persona'" />
         </div>
 
         <!-- Select Tipo de Identificación -->
         <div class="form-group">
-          <SelectIdentificationTypes              
-        
-            :icons="false"
-            :labelpredeterminado="'Tipo de Identificación'"
-            v-model="id_type_full"
-          />
+          <SelectIdentificationTypes :icons="false" :labelpredeterminado="'Tipo de Identificación'"
+            v-model="id_type_full" />
         </div>
 
         <!-- Select Tipo de Régimen (dinámico) -->
 
-   <div class="form-group">
+        <div class="form-group">
           <label>Tipo de Régimen</label>
-          <USelectMenu 
-            v-model="regimen_full" 
-            :options="types_regiments" 
-            option-attribute="name"
-            placeholder="Seleccione un régimen"
-          />
+          <USelectMenu v-model="regimen_full" :options="types_regiments" option-attribute="name"
+            placeholder="Seleccione un régimen" />
         </div>
 
         <!-- Input Numérico -->
         <div class="form-group">
           <label>Número de Identificación</label>
-          <input 
-            v-model="identifier"
-            type="number" 
-            placeholder="Sin dígito de verificación" 
-            required 
+          <input v-model="identifier" type="text" 
+            inputmode="numeric" 
+            placeholder="Sin dígito de verificación"
+            required
             class="input-number"
-            @keypress.prevent="numericOnly"
+            @keydown="handleNumericInput"
+            @paste="handlePaste"
           />
         </div>
 
@@ -97,11 +85,25 @@ const regimen_full = ref<Regimen | null>(null);
 const loading = ref(false);
 const types_regiments = ref<Regimen[]>([]);
 
-const numericOnly = (event: KeyboardEvent) => {
-  if (!/[0-9]/.test(event.key)) {
+const handleNumericInput = (event: KeyboardEvent) => {
+  const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+  const isNumber = /^[0-9]$/i.test(event.key);
+  
+  if (!isNumber && !allowedKeys.includes(event.key)) {
     event.preventDefault();
   }
 };
+
+const handlePaste = (event: ClipboardEvent) => {
+  const pasteData = event.clipboardData?.getData('text') || '';
+  if (!/^\d+$/.test(pasteData)) {
+    event.preventDefault();
+  }
+};
+
+watch(identifier, (newVal) => {
+  identifier.value = newVal.replace(/[^\d]/g, '');
+});
 
 const loadRegiments = () => {
   console.log('Tipo de persona seleccionado:', type_full.value);
@@ -122,7 +124,7 @@ const submitForm = async () => {
   if (!formValid.value) return;
 
   loading.value = true;
-  
+
   try {
     const response = await fetch('/api/third', {
       method: 'POST',
@@ -141,9 +143,9 @@ const submitForm = async () => {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Error al guardar el tercero');
     }
-    
+
     const data = await response.json();
-    
+
     // Mostrar alerta de éxito
     await Swal.fire({
       title: '¡Éxito!',
@@ -152,12 +154,12 @@ const submitForm = async () => {
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#6699CC',
     });
-    
+
     emit('created', data);
     closeModal();
   } catch (error) {
     console.error('Error:', error);
-    
+
     // Mostrar alerta de error
     await Swal.fire({
       title: 'Error',
@@ -172,10 +174,10 @@ const submitForm = async () => {
 };
 
 const formValid = computed(() => {
-  return type_full.value?.id && 
-         id_type_full.value?.id && 
-         identifier.value && 
-         regimen_full.value?.id;
+  return type_full.value?.id &&
+    id_type_full.value?.id &&
+    identifier.value &&
+    regimen_full.value?.id;
 });
 
 const closeModal = () => {
@@ -184,16 +186,21 @@ const closeModal = () => {
 </script>
 
 
-  <style scoped>
+<style scoped>
 input:focus {
-  border-color: #007bff; /* Borde azul al enfocar */
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Sombra azul al enfocar */
+  border-color: #007bff;
+  /* Borde azul al enfocar */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  /* Sombra azul al enfocar */
 }
 
 select:focus {
-  border-color: #007bff; /* Borde azul al enfocar */
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Sombra azul al enfocar */
+  border-color: #007bff;
+  /* Borde azul al enfocar */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  /* Sombra azul al enfocar */
 }
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -223,41 +230,42 @@ select:focus {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
   }
 }
 
-  .form-group label {
-    display: block;
-    text-align: left;
-    margin-bottom: 5px;
-    font-weight: 500;
-    color: #444;
-  }
-  
-  select {
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 1em;
-    border-radius: 8px;
-    padding: 10px 15px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    outline: none;
-    transition: border 0.3s ease;
-    cursor: pointer;
-    
-  }
-  
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
+.form-group label {
+  display: block;
+  text-align: left;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #444;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  outline: none;
+  transition: border 0.3s ease;
+  cursor: pointer;
+
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
 /* Botones */
 .form-actions {
@@ -281,8 +289,10 @@ select:focus {
 }
 
 .btn-submit {
-  background-color: #6699CC; /* Color azul para que se vea */
-  color: white; /* Texto blanco para contraste */
+  background-color: #6699CC;
+  /* Color azul para que se vea */
+  color: white;
+  /* Texto blanco para contraste */
   border: none;
   padding: 10px 15px;
   font-size: 16px;
@@ -293,7 +303,8 @@ select:focus {
 }
 
 .btn-submit:hover {
-  background: #0056b3; /* Azul más oscuro al pasar el mouse */
+  background: #0056b3;
+  /* Azul más oscuro al pasar el mouse */
 }
 
 
@@ -312,4 +323,4 @@ select:focus {
 .btn-cancel:hover {
   background: #b3b3b3;
 }
-  </style>
+</style>

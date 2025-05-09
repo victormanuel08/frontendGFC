@@ -1,36 +1,26 @@
 <template>
-  <div class="fixed top-1/2 right-4 -translate-y-1/2 flex flex-col gap-3 z-[1000]">
+  <div class="fixed top-1/2 right-4 -translate-y-1/2 flex flex-row gap-3 z-[1000]">
+
+    <UTooltip text="Contactar por WhatsApp" :popper="{ placement: 'left' }">
+      <UButton icon="i-heroicons-chat-bubble-oval-left-ellipsis" color="green" size="xl" square :ui="{
+        rounded: 'rounded-full',
+        padding: { xl: 'p-3' }
+      }" class="shadow-lg hover:scale-110 transition-transform duration-200 bg-[#25D366] hover:bg-[#128C7E]"
+        @click="openWhatsApp" />
+    </UTooltip>
     <!-- Botón Login/Logout -->
     <UTooltip :text="isLogged ? 'Cerrar sesión' : 'Iniciar sesión'" :popper="{ placement: 'left' }">
-      <UButton
-        :icon="isLogged ? 'i-heroicons-arrow-left-end-on-rectangle' : 'i-heroicons-user-circle'"
-        :color="isLogged ? 'red' : 'primary'"
-        size="xl"
-        square
-        :ui="{ 
+      <UButton :icon="isLogged ? 'i-heroicons-arrow-left-end-on-rectangle' : 'i-heroicons-user-circle'"
+        :color="isLogged ? 'red' : 'primary'" size="xl" square :ui="{
           rounded: 'rounded-full',
           padding: { xl: 'p-3' }
-        }"
-        class="shadow-lg hover:scale-110 transition-transform duration-200"
-        @click="handleAuthAction"
-      />
+        }" class="shadow-lg transition-transform duration-200 hover:bg-blue-800 hover:scale-110"
+        @click="handleAuthAction" />
     </UTooltip>
 
+
     <!-- Botón WhatsApp -->
-    <UTooltip text="Contactar por WhatsApp" :popper="{ placement: 'left' }">
-      <UButton
-        icon="i-heroicons-chat-bubble-oval-left-ellipsis"
-        color="green"
-        size="xl"
-        square
-        :ui="{ 
-          rounded: 'rounded-full',
-          padding: { xl: 'p-3' }
-        }"
-        class="shadow-lg hover:scale-110 transition-transform duration-200 bg-[#25D366] hover:bg-[#128C7E]"
-        @click="openWhatsApp"
-      />
-    </UTooltip>
+
 
     <!-- Modal de Login -->
     <UModal v-model="isLoginModalOpen">
@@ -38,62 +28,37 @@
         <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-white">
           {{ isRegistering ? 'Registro' : 'Inicio de Sesión' }}
         </h2>
-        
+
         <form @submit.prevent="submitAuthForm">
           <div class="space-y-4">
             <UFormGroup label="Usuario" required>
-              <UInput
-                v-model="authForm.username"
-                type="text"
-                placeholder="Nombre de usuario"
-                icon="i-heroicons-user-circle"
-                autofocus
-              />
+              <UInput v-model="authForm.username" type="text" placeholder="Nombre de usuario"
+                icon="i-heroicons-user-circle" autofocus />
             </UFormGroup>
 
             <UFormGroup label="Contraseña" required>
-              <UInput
-                v-model="authForm.password"
-                type="password"
-                placeholder="••••••••"
-                icon="i-heroicons-lock-closed"
-              />
+              <UInput v-model="authForm.password" type="password" placeholder="••••••••"
+                icon="i-heroicons-lock-closed" />
             </UFormGroup>
 
             <div v-if="isRegistering" class="space-y-4">
               <UFormGroup label="Confirmar Contraseña" required>
-                <UInput
-                  v-model="authForm.passwordConfirm"
-                  type="password"
-                  placeholder="••••••••"
-                  icon="i-heroicons-lock-closed"
-                />
+                <UInput v-model="authForm.passwordConfirm" type="password" placeholder="••••••••"
+                  icon="i-heroicons-lock-closed" />
               </UFormGroup>
             </div>
 
             <div class="flex gap-3">
-              <UButton
-                type="submit"
-                :loading="isSubmitting"
-                :label="isRegistering ? 'Registrarse' : 'Iniciar Sesión'"
+              <UButton type="submit" :loading="isSubmitting" :label="isRegistering ? 'Registrarse' : 'Iniciar Sesión'"
                 class="flex-1"
-                :disabled="isSubmitting || (isRegistering && authForm.password !== authForm.passwordConfirm)"
-              />
-              <UButton
-                color="gray"
-                label="Cancelar"
-                class="flex-1"
-                @click="closeAuthModal"
-              />
+                :disabled="isSubmitting || (isRegistering && authForm.password !== authForm.passwordConfirm)" />
+              <UButton color="gray" label="Cancelar" class="flex-1" @click="closeAuthModal" />
             </div>
           </div>
         </form>
 
         <div class="text-center">
-          <button
-            @click="toggleAuthMode"
-            class="text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400"
-          >
+          <button @click="toggleAuthMode" class="text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400">
             {{ isRegistering ? '¿Ya tienes cuenta? Inicia Sesión' : '¿No tienes cuenta? Regístrate' }}
           </button>
         </div>
@@ -171,13 +136,13 @@ const handleLogin = async () => {
   if (!token.startsWith('Bearer ')) token = `Bearer ${token}`
 
   accessToken.value = token
-  
+
   const userResponse = await fetch('/api/me', {
     headers: { Authorization: token }
   })
-  
+
   if (!userResponse.ok) throw new Error('Error al obtener datos de usuario')
-  
+
   user.value = await userResponse.json()
   closeAuthModal()
   Swal.fire('Éxito', 'Sesión iniciada correctamente', 'success')
@@ -227,7 +192,7 @@ const openWhatsApp = () => {
     right: 0.5rem;
     gap: 0.75rem;
   }
-  
+
   .u-button {
     width: 2.5rem;
     height: 2.5rem;

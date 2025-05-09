@@ -4,6 +4,9 @@ import { jwtDecode } from "jwt-decode"
 const publicRoutes = [
   "/",
   "/home",
+  "/bce",
+  "/portfolio",
+  "/car"
 ]
 
 export default defineNuxtRouteMiddleware((to) => {
